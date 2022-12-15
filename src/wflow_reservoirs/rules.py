@@ -87,3 +87,41 @@ def update_sqtable(time, inflow, storage, timestepsecs, maxvolume, sq_S, sq_Q):
         outflow = outflow + (storage-maxvolume)/timestepsecs
         storage = maxvolume
     return outflow, storage
+
+def update_hqtable(time, inflow, storage, timestepsecs, maxvolume, hq_S, hq_Q, A, sh):
+    """
+    Water level-based reservoir rules with seasonal variations represented in a HQ-table,
+    based on the lake module in Wflow. It uses interpolation to determine the discharge
+    for a given day of the year and water level. Conversion from storage to water level
+    is performed either by assuming a rectangular reservoir (S=A*H) or a storage curve (SH)
+
+    Parameters
+    ----------
+    - time: date and time of timestep i in datetime format
+    - inflow: inflow to the reservoir at time i [m3/s]
+    - storage: inflow to the reservoir at time i [m3]
+    - timestepsecs: model time step in seconds
+    - maxvolume: maximum volume of reservoir in [m3]
+    - hq_S: column containing N discrete storage levels
+    - hq_Q: table containing discharges corresponding to the storage levels 
+      for each day in year resulting in a table with size 365 x N
+    - sh: table describing the storage curve of the reservoir with
+      first column H [m] and second column S [m3]
+    - A: area of the reservoir [m2]
+
+    Returns
+    -------
+    - outflow at the next timestep i+1 [m3/s]
+    - storage at the next timestep i+1 [m3]
+    """
+    doy = min(time.dayofyear,365)
+    # Determine water level through either S=A*H or interpolation of S=f(H)
+    waterlevel = storage/A if A else np.interp(storage, sh[:,0], sh[:,1])
+    # Interpolate from HQ table
+    outflow = np.interp(waterlevel, hq_S, hq_Q[:,doy-1])
+    storage = storage + inflow * timestepsecs - outflow * timestepsecs
+    # Determine new storage. If larger than maxvolume -> overflow
+    if maxvolume > 0 and storage > maxvolume:
+        outflow = outflow + (storage-maxvolume)/timestepsecs
+        storage = maxvolume
+    return outflow, storage
