@@ -1,7 +1,8 @@
 import pandas as pd
 import numpy as np
 
-from .rules import *
+# import reservoir rules
+from rules import *
 
 class WflowReservoir:
     def __init__(self):
@@ -103,6 +104,27 @@ class WflowReservoir:
         self.reservoir_type = "sqtable"
         return
 
+    def setup_hqtable(
+        self,
+        maxvolume: float,
+        csv_path: str,
+        delimiter: str = ",",
+        A: float = None,
+        storage_curve: str = None
+    ):
+        """
+        Setting the parameters of the WflowReservoir for water level-based reservoir rules
+
+        The csv-file is read using np.loadtxt for which the delimiter can be specified
+
+        """    
+        hq = np.loadtxt(csv_path, delimiter=delimiter)
+        sh = np.loadtxt(storage_curve, delimiter=delimiter) if not A else None
+        self.params = (maxvolume, hq[:,0], hq[:,1:-1], A, sh)
+        self.update = update_hqtable
+        self.reservoir_type = "hqtable"
+        return
+
     def setup_custom(self, func, *args):
         """
         Setting the parameters of the WflowReservoir for a custom function
@@ -120,5 +142,22 @@ class WflowReservoir:
         self.reservoir_type = "custom"
         return
 
-    ### TO DO: setup_hydromt(self, WflowModel) to use hydromt functions to obtain parameters from a hydromt_wflow WflowModel
-    ### TO DO: create example notebook comparing the reservoirs
+
+    def setup_hydromt(self, WflowModel, waterbody_id):
+        """
+        Setting the parameters of a simple WflowReservoir from a WflowModel
+        which is build using hydromt_wflow. Selected reservoir by waterbody_id
+
+        See also hydromt_wflow.workflows.reservoirattrs() documentation
+
+        """ 
+        geom = WflowModel.staticgeoms["reservoirs"]
+        gdf = geom[geom["waterbody_id"] == waterbody_id]
+        self.params = (float(gdf["ResMaxVolume"]),
+                       float(gdf["ResDemand"]),
+                       float(gdf["ResMaxRelease"]),
+                      [float(gdf["ResTargetMinFrac"]) for i in range(365)],
+                      [float(gdf["ResTargetFullFrac"]) for i in range(365)])
+        self.update = update_simple
+        self.reservoir_type = "hydromt"
+        return
