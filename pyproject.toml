@@ -1,0 +1,30 @@
+# pyproject.toml
+
+[project]
+name = "reservoirs_wflow"
+version = "0.1.dev"
+description = "Simulate Wflow-like reservoirs"
+readme = "README.md"
+authors = [{ name = "Sebastian Hartgring", email = "sebastian.hartgring@deltares.nl" }]
+license = { file = "LICENSE" }
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+]
+keywords = ["wflow", "hydromt", "reservoir"]
+dependencies = [
+    "numpy",
+    "pandas",
+]
+requires-python = ">=3.9" # Not checked for older versions
+
+[project.optional-dependencies]
+dev = ["hydromt", "hydromt_wflow"]
+
+[project.urls]
+Source = "https://github.com/shartgring/reservoirs_wflow"
+Wflow = "https://github.com/Deltares/Wflow.jl/"
+
+[project.scripts]
+realpython = "reader.__main__:main"
