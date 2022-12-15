@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 
-from . import operation_rules
+from .rules import *
 
 class WflowReservoir:
     def __init__(self):
