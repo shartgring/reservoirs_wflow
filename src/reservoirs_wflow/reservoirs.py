@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 # import reservoir rules
-from rules import *
+from .rules import *
 
 class WflowReservoir:
     def __init__(self):
