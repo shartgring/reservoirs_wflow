@@ -99,7 +99,7 @@ class WflowReservoir:
 
         """    
         sq = np.loadtxt(csv_path, delimiter=delimiter)
-        self.params = (maxvolume, sq[:,0], sq[:,1:-1])
+        self.params = (maxvolume, sq[:,0], sq[:,1:])
         self.update = update_sqtable
         self.reservoir_type = "sqtable"
         return
@@ -120,7 +120,7 @@ class WflowReservoir:
         """    
         hq = np.loadtxt(csv_path, delimiter=delimiter)
         sh = np.loadtxt(storage_curve, delimiter=delimiter) if not A else None
-        self.params = (maxvolume, hq[:,0], hq[:,1:-1], A, sh)
+        self.params = (maxvolume, hq[:,0], hq[:,1:], A, sh)
         self.update = update_hqtable
         self.reservoir_type = "hqtable"
         return
