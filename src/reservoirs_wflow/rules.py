@@ -46,7 +46,7 @@ def update_simple(time, inflow, storage, timestepsecs, maxvolume, demand, maxrel
     percfull = vol / maxvolume
     # first determine minimum (environmental) flow using a simple sigmoid curve to scale for target level
     fac = scurve(percfull, targetminfrac[doy-1], 1.0, 30.0)
-    demandrelease = min(fac * demand * timestepsecs, vol)
+    demandrelease = min(fac * demand[doy-1] * timestepsecs, vol)
     vol = vol - demandrelease
     wantrel = max(0.0, vol - (maxvolume * targetfullfrac[doy-1]))
     # Assume extra maximum Q if spilling
