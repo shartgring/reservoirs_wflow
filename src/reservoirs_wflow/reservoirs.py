@@ -56,32 +56,30 @@ class WflowReservoir:
         self,
         maxvolume: float,
         maxrelease: float,
-        demand: float,
+        demand: float|list,
         targetminfrac: float|list,
         targetfullfrac: float|list,
     ):
         """
         Setting the parameters of the WflowReservoir for a simple reservoir
 
-        It is possible to provide targetminfrac and targetfullfrac as a cyclic parameter
+        It is possible to provide demand, targetminfrac and targetfullfrac as a cyclic parameter
         for monthly cycling (length 12) or daily cycling (length 365)
         """
-        if not isinstance(targetminfrac, float):
-            if len(targetminfrac) != 12 and len(targetminfrac) != 365:
-                raise ValueError("Cyclic parameter targetminfrac/targetfullfrac must have length 12 (monthly) or 365 (daily)")
-            elif not type(targetminfrac) == type(targetfullfrac):
-                raise TypeError("targetminfrac and targetfullfrac must be of the same type")
-            elif len(targetminfrac) == 12:
-                _targetminfrac = [targetminfrac[moy(i)-1] for i in range(365)]
-                _targetfullfrac = [targetfullfrac[moy(i)-1] for i in range(365)]
+        _params = []
+        for param, name in zip([demand, targetminfrac, targetfullfrac], ["demand", "targetminfrac", "targetfullfrac"]):
+            print(param, type(param))
+            if not isinstance(param, (int, float)):
+                if len(param) != 12 and len(param) != 365:
+                    raise ValueError(f"cyclic parameter '{name}' must have length 12 (monthly) or 365 (daily)")
+                elif len(param) == 12:
+                    param = [param[moy(i)-1] for i in range(365)]
             else:
-                _targetminfrac = targetminfrac
-                _targetfullfrac = targetfullfrac
-        else:
-            _targetminfrac = [targetminfrac for i in range(365)]
-            _targetfullfrac = [targetfullfrac for i in range(365)]
-
-        self.params = (maxvolume, demand, maxrelease, _targetminfrac, _targetfullfrac)
+                param = [param for i in range(365)]
+            _params.append(param)
+        
+        _demand, _targetminfrac, _targetfullfrac = _params
+        self.params = (maxvolume, _demand, maxrelease, _targetminfrac, _targetfullfrac)
         self.update = update_simple
         self.reservoir_type = "simple"
         return
